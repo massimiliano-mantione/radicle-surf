@@ -21,6 +21,7 @@ impl From<String> for Label {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Path(pub NonEmpty<Label>);
 
 impl Path {

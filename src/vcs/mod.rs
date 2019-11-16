@@ -1,6 +1,8 @@
 use crate::file_system::Directory;
 use nonempty::NonEmpty;
 
+mod mock;
+
 #[derive(Clone)]
 pub struct History<A>(pub NonEmpty<A>);
 
@@ -10,6 +12,7 @@ impl<A> History<A> {
     }
 }
 
+#[derive(Clone)]
 pub struct Repo<A>(pub Vec<History<A>>);
 
 pub struct Browser<'browser, Repo, A> {
@@ -69,14 +72,14 @@ impl<'browser, Repo, A> Browser<'browser, Repo, A> {
 
 pub trait GetRepo<A> {
     type RepoId;
-    fn get_repo(identifier: &Self::RepoId) -> Repo<A>;
+    fn get_repo(identifier: &Self::RepoId) -> Option<Repo<A>>;
 }
 
 pub trait GetHistory<A> {
     type HistoryId;
     type ArtefactId;
 
-    fn get_history(identifier: &Self::HistoryId, repo: Repo<A>) -> History<A>;
+    fn get_history(identifier: &Self::HistoryId, repo: &Repo<A>) -> Option<History<A>>;
 
     fn get_identifier(artifact: &A) -> &Self::ArtefactId;
 
@@ -88,7 +91,7 @@ pub trait GetHistory<A> {
         history
             .iter()
             .find(|artifact| {
-                let current_id: &Self::ArtefactId = Self::get_identifier(&artifact);
+                let current_id = Self::get_identifier(&artifact);
                 *identifier == *current_id
             })
             .cloned()
