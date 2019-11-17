@@ -1,8 +1,9 @@
 use crate::file_system::*;
 use crate::vcs::*;
 
-type MockHistory = History<Path>;
-type MockRepo = Repo<Path>;
+type Artifact = (usize, Path, File);
+type MockHistory = History<Artifact>;
+type MockRepo = Repo<Artifact>;
 
 impl RepoBackend for MockRepo {
     fn new() -> Directory<MockRepo> {
@@ -13,22 +14,30 @@ impl RepoBackend for MockRepo {
     }
 }
 
-impl GetRepo<Path> for MockRepo {
+impl VCS<Artifact> for MockRepo {
+    type Repository = MockRepo;
     type RepoId = MockRepo;
-    fn get_repo(identifier: &Self::RepoId) -> Option<MockRepo> {
-        Some(identifier.clone())
-    }
-}
-
-impl GetHistory<Path> for MockHistory {
+    type History = MockHistory;
     type HistoryId = usize; // index into repo
     type ArtefactId = usize; // index into a path
 
-    fn get_history(identifier: &Self::HistoryId, repo: &MockRepo) -> Option<MockHistory> {
+    fn get_repo(identifier: &Self::RepoId) -> Option<MockRepo> {
+        Some(identifier.clone())
+    }
+
+    fn get_history(repo: &MockRepo, identifier: &Self::HistoryId) -> Option<MockHistory> {
         repo.0.get(*identifier).cloned()
     }
 
-    fn get_identifier(_artifact: &Path) -> &Self::ArtefactId {
-        unimplemented!()
+    fn get_histories(repo: &MockRepo) -> Vec<MockHistory> {
+        repo.0.clone()
+    }
+
+    fn get_identifier(artifact: &Artifact) -> &Self::ArtefactId {
+        &artifact.0
+    }
+
+    fn to_history(history: &Self::History) -> History<Artifact> {
+        history.clone()
     }
 }

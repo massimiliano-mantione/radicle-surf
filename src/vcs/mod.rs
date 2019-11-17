@@ -6,7 +6,7 @@ mod mock;
 /// A non-empty bag of artifacts which are used to
 /// derive a `Directory` view. Examples of artifacts
 /// would be commits in Git or patches in Pijul.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct History<A>(pub NonEmpty<A>);
 
 impl<A> History<A> {
@@ -73,7 +73,7 @@ impl<A> History<A> {
 
 /// A `Repo` is a bag of `History`s. If the bag is empty
 /// then the `Repo` is in its initial state.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Repo<A>(pub Vec<History<A>>);
 
 /// A `Browser` is a way of rendering a `History` into a
@@ -139,13 +139,13 @@ pub trait VCS<A> {
     type ArtefactId;
 
     /// Find a Repository
-    fn get_repo(identifier: &Self::RepoId) -> Self::Repository;
+    fn get_repo(identifier: &Self::RepoId) -> Option<Self::Repository>;
 
     /// Find a History in a Repo given a way to identify it
-    fn get_history(repo: Self::Repository, identifier: &Self::HistoryId) -> Self::History;
+    fn get_history(repo: &Self::Repository, identifier: &Self::HistoryId) -> Option<Self::History>;
 
     /// Find all histories in a Repo
-    fn get_histories(repo: Self::Repository) -> Vec<Self::History>;
+    fn get_histories(repo: &Self::Repository) -> Vec<Self::History>;
 
     /// Identify artifacts of a Repository
     fn get_identifier(artifact: &A) -> &Self::ArtefactId;
@@ -154,7 +154,7 @@ pub trait VCS<A> {
     fn to_history(history: &Self::History) -> History<A>;
 
     /// Turn a Repository into a radicle-surf Repository
-    fn to_repo(repo: Self::Repository) -> Repo<A> {
+    fn to_repo(repo: &Self::Repository) -> Repo<A> {
         Repo(
             Self::get_histories(repo)
                 .iter()
