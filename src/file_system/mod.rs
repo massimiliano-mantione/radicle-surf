@@ -141,6 +141,10 @@ impl Path {
         self.0.push(label)
     }
 
+    pub fn pop(&mut self) -> Option<Label> {
+        self.0.pop()
+    }
+
     /// Iterator over the [`Label`](struct.Label.html)s in the `Path`.
     ///
     /// # Examples
@@ -404,7 +408,7 @@ impl DirectoryContents {
         match self {
             DirectoryContents::SubDirectory(dir) => Some(&dir.label),
             DirectoryContents::File(file) => Some(&file.filename),
-            _ => None
+            DirectoryContents::Repo => None,
         }
     }
 }
